@@ -20,6 +20,8 @@
   ** Delete
      *** unlink("testdir2", recursive=TRUE)
 
+  ** object.size(): how much space the dataset is occupying in memory
+
   ** 把多個expression用{和}包覆起來，變成一個大的expression
   ** 註解：#
   ** 一個函數的細節說明: help(函數名) 或 ?函數名
@@ -174,6 +176,14 @@
      *** dget(): reading in R code files (inverse of dput)
      *** load(): reading in saved workspaces
      *** unserialize(): reading single R objects in binary form
+     *** summary(): provides different output for each variable, depending on its class.
+         For numeric data, summary() displays the minimum, 1st quartile, median,
+         mean, 3rd quartile, and maximum. These values help us understand how the data are
+         distributed. For categorical variables (called 'factor' variables in R),
+         summary() displays the number of times each value (or 'level') occurs in the data.
+     *** table(): see how many times each value actually occurs in the data; table uses
+                  the cross-classifying factors to build a contingency table of the counts
+                  at each combination of factor levels.
 
   ** Writing Dara
      *** write.table
@@ -217,8 +227,14 @@
 * Vector
   ** The simplest and most common data structure in R is the vector
      Vectors come in two different flavors: atomic vectors and lists.
-     An atomic vector contains exactly one data type
-     A list may contain multiple data types.
+     - An atomic vector contains exactly one data type
+     - A list may contain multiple data types.
+  ** 向量物件一次只能接受一種類別，若同時在一個向量中給定多種類別，R 將會依以下順序進行自動轉換：字串 > 數值 > 布林。
+     可以利用以下函數自行轉換向量的類別：as.character, as.numeric, as.logical。
+     # 字串轉數字
+     a1 <- c("89", "91", "102")
+     as.numeric(a1)
+     [1]  89  91 102
   ** + - * / ^
      min(x), min(x), range(x), sum(x), length(x), sqrt(x)
      var(x) #樣本變異數
@@ -243,6 +259,10 @@
 
   ** names(x) <- c("a", "b", "c", "d")
      x[c("b", "d")]: 選取名稱為c("b","d")的值
+
+  ** unique(x): When given a vector, the unique() function returns a vector with
+     all duplicate elements removed. In other words, unique() returns a vector of
+     only the 'unique' elements.
 
   ** identical(vect, vect2)
 
@@ -434,7 +454,7 @@
      因為data.frame代表的是二維表格，所以每一個值的長度都要一致（矩陣或data.frame的話，則是列(row)的個數）。
      這種特性讓我們在整理資料上是非常的方便。
 
-  ** a <- data.frame(class = "NTU", id = 1:10,scores = matrix(c(80:99),nrow=10,ncol=2))
+  ** a <- data.frame(class = "NTU", id = 1:10, scores = matrix(c(80:99), nrow = 10, ncol = 2))
      nrow(a): 列出a所包含的列數
      ncol(a): 列出a所包含的欄數
      dim(a): 一次列出兩者
@@ -553,6 +573,7 @@
      When R tries to bind a value to a symbol, it searches through a series of
      environments to find the appropriate value. When you are working on the
      command line and need to retrieve the value of an R object, the order is roughly
+
      1. Search the global environment for a symbol name matching the one requested
         - global environment, it's just the workspace, and it consists of all the
           things that you've defined or load into R
@@ -568,6 +589,7 @@
              environment to have multiple "children"
            . the only environment without a parent is the empty environment
            . A function + an environment = a closure or function closure
+
      *** Lexical vs. Dynamic Scoping
          y <- 10
 
@@ -585,6 +607,7 @@
          - With lexical scoping the value of y in the function g
            is looked up in the environment in which the function was defined,
            in this case the global environment, so the value of y is 10
+           
          - With dynamic scoping, the value of y is looked up in the environment
            from which the function was called (sometimes referred to as the
            calling environment).
@@ -619,3 +642,617 @@
      [1] "1-X" "2-Y" "3-Z"
 
   ** paste0預設在串接字串的時候，中間是不會有空格的
+
+* Loop Functions
+  R和一般程式語言或統計軟體的不同在於進行迴圈運算時，可以使用向量的方式來處理
+  Writing for, while loop is useful when programming, but not particularly easy when
+  working interactively on the command line.
+  m <- matrix(data=cbind(rnorm(30, 0), rnorm(30, 2), rnorm(30, 5)), nrow=30, ncol=3)
+
+          method1     method2     method3
+  [1,] 0.05517714 0.014054038 0.017260447
+  [2,] 0.08367678 0.003570883 0.004289079
+  [3,] 0.05274706 0.028629661 0.071323030
+  [4,] 0.06769936 0.048446559 0.057432519
+  [5,] 0.06875188 0.019782518 0.080564474
+  [6,] 0.04913779 0.100062929 0.102208706
+
+  ** apply(): apply() a function over the margins of an array
+
+              apply() is used to evaluate a function (often an anonymous one) over the margins of an array.
+
+              - It is most often used to apply a function to the rows or columns of a matrix
+              - It can be used with general arrays, e.g. taking the average of an array of matrices
+              - It is not really faster than writing a loop, but it works in one line!
+
+              > str(apply)
+              function (X, MARGIN, FUN, ...)
+              . X is an array
+              . MARGIN is an integer vector indicating which margins should be "retained"
+              . FUN is a function to be applied
+              . ... is for arguments to be passed to FUN
+
+              x <- matrix(rnorm(200), 20, 10)
+              apply(x, 2, mean) # to calculate the mean of each column of the matrix
+              [1] -0.08538894 -0.05150798 -0.01461461 -0.02571460 -0.10341532  0.13806525 -0.32023945
+              [8] -0.48222733  0.26260729  0.23057025
+
+              apply(x, 1, sum)
+              [1]  3.53666974  0.05436489 -0.19636050  1.32095061 -0.37968332 -7.18129363 -3.97948192
+              [8]  5.96477875 -0.34526824  0.94733718  3.40268662 -3.10366911 -1.33419215  0.74305494
+              [15]  2.41345776 -3.68821392 -0.83081421 -0.08729738 -0.67011293 -5.62422199
+
+              *** col/row sums and means
+              For sums and means of matrix dimensions, we have some shortcuts
+              . rowSums = apply(x, 1, sum)
+              . rowMeans = apply(x, 1, mean)
+              . colSums = apply(x, 2, sum)
+              . colMeans = apply(x, 2, mean)
+              These shortcut functions are much faster, but you won't notice unless you're usung a large matrix
+
+              apply是將一個公式或函數(第三個參數)套用在某個資料集(第一個參數)中的每個元素上，
+              特別的是，可以用第二個參數來指定公式是要依照ROW還是COL來執行。
+
+              - 當第二個參數是1時，公式by row來執行
+
+              apply(m, 1, mean)
+              # [1] 2.408150 2.709325 1.718529 0.822519 2.693614 2.259044 1.849530 2.544685 2.957950 2.219874
+              #[11] 2.582011 2.471938 2.015625 2.101832 2.189781 2.319142 2.504821 2.203066 2.280550 2.401297
+              #[21] 2.312254 1.833903 1.900122 2.427002 2.426869 1.890895 2.515842 2.363085 3.049760 2.027570
+
+              - 當地二個參數是2時，公式by col執行
+              apply(m, 2, mean)
+              #[1] -0.02664418  1.95812458  4.86857792
+
+              - Our own functions: 我們也可以在apply中定義自己的function
+
+                apply(m, 2, function(x) length(x[x<0]))
+                #[1] 14  1  0
+
+  ** lapply(): Loop over a list and evaluate function on each element.
+
+               lapply takes 3 arguments: (1) a list x; (2) a function (or the name
+               of a function) FUN; (3) other arguments via its ... argument. If x is
+               not a list, it will be coerced to a list using as.list
+
+               The lapply() function takes a list as input, applies a function
+               to each element of the list, then returns a list of the same
+               length as the original one. The 'l' in 'lapply' stands for 'list'.
+
+               x <- list(a = 1:5, b = rnorm(10))
+               < lapply(x, mean)
+               $a
+               [1] 3
+
+               $b
+               [1] 0.0296824
+
+               x <- list(a = matrix(1:4, 2, 2), b = matrix(1:6, 3, 2))
+               lapply(x, function(let) elt[,1])
+               $a
+               [1] 1 2
+
+               $b
+               [1] 1 2 3
+
+  ** sapply(): sapply will try to simplify the result of lapply if possible
+
+               - If the result is a list where every element is length 1, then a vector is return
+               - If the result is a list where every element is a vector of the same length (>1), a matrix is returned.
+               - If it can't figure things out, a list is returned
+
+               Same as lapply but try to simplify the result.
+               sapply() allows you to automate this process by calling lapply()
+               behind the scenes, but then attempting to simplify (hence the 's' in 'sapply')
+               the result for you.
+
+     In general, if the result is a list where every element is of length one,
+     then sapply() returns a vector. If the result is a list where every element
+     is a vector of the same length (> 1), sapply() returns a matrix. If sapply()
+     can't figure things out, then it just returns a list, no different from what
+     lapply() would give you.
+
+     sapply和lapply是兩兄弟，都會將公式帶入到輸入檔案的每個元素上，差別在於：
+     sapply吐回一個vactor
+     lapply吐回一個list
+
+     我們也可以透過參數 simplify=FALSE 讓sapply吐回一個list
+     sapply(1:3, function(x) x^2, simplify=F)
+     #[[1]]
+     #[1] 1
+     #
+     #[[2]]
+     #[1] 4
+     #
+     #[[3]]
+     #[1] 9
+
+     或是在lapply裡使用 unlist 參數讓lapply吐回一個vector
+     unlist(lapply(1:3, function(x) x^2))
+     #[1] 1 4 9
+
+     對於一個矩陣，要如何用sapply或lapply計算欄位平均數呢?
+
+     sapply(1:3, function(x) mean(m[,x]))
+     [1] -0.02664418  1.95812458  4.86857792
+
+     我們使用欄位index(1:3)的方式代入到function中，並且使用[,x]的方式來指定針對欄來做計算。
+
+
+     我們可以將上述function中的m，用y來取代，變成一個有兩個變數的function，
+     x部分一樣是第一個參數中的1:3，y在之後再用m來指定代入。
+
+     sapply(1:3, function(x, y) mean(y[,x]), y=m)
+     #[1] -0.02664418  1.95812458  4.86857792
+
+  ** vapply(): Whereas sapply() tries to 'guess' the correct format of the result,
+               vapply() allows you to specify it explicitly. If the result doesn't
+               match the format you specify, vapply() will throw an error, causing
+               the operation to stop. This can prevent significant problems in your
+               code that might be caused by getting unexpected return values from sapply().
+
+               If we wish to be explicit about the format of the result we expect,
+               we can use vapply(flags, class, character(1)). The 'character(1)'
+               argument tells R that we expect the class function to return a
+               character vector of length 1 when applied to EACH column of the flags dataset.
+
+               You might think of vapply() as being 'safer' than sapply(), since it
+               requires you to specify the format of the output in advance, instead of just
+               allowing R to 'guess' what you wanted. In addition, vapply() may perform
+               faster than sapply() for large datasets. However, when doing data analysis
+               interactively (at the prompt), sapply() saves you some typing and will often
+               be good enough.
+
+  ** mapply(): Multivariate version of lapply
+
+               mapply is a multivariate apply of sorts which applies a function in parallel over a set of arguments
+
+               str(mapply)
+               function (FUN, ..., MoreArgs = NULL, SIMPLIFY = TRUE, USE.NAMES = TRUE)
+               . FUN is a function to apply
+               . ... contains arguments to apply over
+               . MoreArgs is a list of other arguments to FUN
+               . SIMPLIFY indicates whether the result should be simplified
+
+               list(rep(1, 4), rep(2, 3), rep(3, 2), rep(4, 1))
+
+               equals
+
+               mapply(rep, 1:4, 4:1)
+               [[1]]
+               [1] 1 1 1 1
+
+               [[2]]
+               [1] 2 2 2
+
+               [[3]]
+               [1] 3 3
+
+               [[4]]
+               [1] 4
+
+               *** Vectoring a Function
+
+               noise <- function(n, mean, sd) {
+                   rnorm(n, mean, sd)
+               }
+
+               noise(5, 1, 2)
+               [1]  2.1945122  1.8741575  1.4029656  1.0304963 -0.4327775
+
+               ***
+               noise(1:5, 1:5, 2)
+               [1] 0.9974302 1.4526441 5.8017890 6.5847869 4.0556485  #WRONG!!
+
+               ==>
+
+               mapply(noise, 1:5, 1:5, 2) == list(noise(1,1,2), noise(2,2,2), noise(3,3,2), noise(4,4,2), noise(5,5,2))
+               [[1]]
+               [1] 2.878642
+
+               [[2]]
+               [1] 1.418569 4.868178
+
+               [[3]]
+               [1] 2.1075160 3.5495385 0.7290312
+
+               [[4]]
+               [1] 5.244319 4.661329 4.015860 6.299002
+
+               [[5]]
+               [1] 7.705769 5.809796 2.784457 6.561307 4.783430
+
+  ** tapply(): tapply a function over subsets of a vector
+
+               tapply is used to apply a function over subsets of a vector.
+
+               str(tapply)
+               function(X, INDEX, FUN = NULL, ..., simplify = TRUE)
+
+               . X is a vector
+               . INDEX is a factor or a list of factors (or else they are coerced to factors)
+               . FUN is a function to be applied
+               . ... contains other arguments to be passed FUN
+               . simplify, should we simplify the result?
+
+               x <- c(rnorm(10), runif(10), rnorm(10, 1))
+               x
+                [1]  1.4269342  0.2358157 -0.7095718 -0.8762095 -1.5512148  0.3540393  0.5656543
+                [8] -0.2209557  0.6441790  0.6153054  0.9576845  0.1509030  0.7201825  0.3252305
+               [15]  0.2504059  0.9867734  0.3414248  0.9357324  0.6208648  0.8140269  0.3030404
+               [22]  0.4633669  2.0292704  1.5317407  2.1592710  1.5626891  1.1656764  0.6947470
+               [29]  1.4078627  2.2623044
+
+               f <- gl(3, 10)
+               f
+               [1] 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3
+               Levels: 1 2 3
+
+               tapply(x, f, mean)
+                        1          2          3
+               0.04839762 0.61032287 1.35799689
+
+               tapply(x, f, mean, simplify = FALSE)
+               $`1`
+               [1] 0.04839762
+
+               $`2`
+               [1] 0.6103229
+
+               $`3`
+               [1] 1.357997
+
+
+               Use tapply() to split your data into groups based on the value of some variable,
+               then apply a function to each group.
+
+               Use tapply(flags$animate, flags$landmass, mean) to apply the mean
+               function to the 'animate' variable separately for each of the six
+               landmass groups, thus giving us the proportion of flags containing an
+               animate image WITHIN each landmass group.
+
+
+
+  ** split(): An auxiliary split is also useful, particularly in conjunction with lapply.
+              split takes a vector or other objects and splits it into groups determined by a factor or list of factors
+
+              Always return a list
+
+              str(split)
+              function (x, f, drop = FALSE, ...)
+              . x is a vector (or list) or data frame
+              . f is a factor (or coerced to one) or a list of factors
+              . drop indicates whether empty factors levels should be dropped
+
+              x <- c(rnorm(10), runif(10), rnorm(10, 1))
+              f <- gl(3, 10)
+              split(x, f)
+              $`1`
+              [1]  0.03510388 -1.64400826 -1.02336322 -0.06296422  0.81272213  2.05716873 -0.97857715
+              [8] -0.66831984  0.86470367 -1.04956231
+
+              $`2`
+              [1] 0.2556216 0.6296386 0.8539480 0.4505012 0.1384692 0.2255371 0.3121164 0.9496904
+              [9] 0.7681904 0.9942713
+
+              $`3`
+              [1]  2.8310212 -0.6589588 -0.6824593  2.5239711  0.7508814  0.5004937  0.2936967
+              [8]  0.8061635  2.4113357  1.2745327
+
+              *** Splitting on More than One Level
+
+              x <- rnorm(10)
+              > f1 <- gl(2, 5)
+              > f2 <- gl(5, 2)
+              > f1
+               [1] 1 1 1 1 1 2 2 2 2 2
+              Levels: 1 2
+              > f2
+               [1] 1 1 2 2 3 3 4 4 5 5
+              Levels: 1 2 3 4 5
+              > interaction(f1, f2)
+               [1] 1.1 1.1 1.2 1.2 1.3 2.3 2.4 2.4 2.5 2.5
+              Levels: 1.1 2.1 1.2 2.2 1.3 2.3 1.4 2.4 1.5 2.5
+
+              *** Interactions can create empty levels
+              str(split(x, list(f1, f2)))
+              List of 10
+              $ 1.1: num [1:2] 0.0332 1.3497
+              $ 2.1: num(0)
+              $ 1.2: num [1:2] -0.186 0.684
+              $ 2.2: num(0)
+              $ 1.3: num 0.927
+              $ 2.3: num -0.000885
+              $ 1.4: num(0)
+              $ 2.4: num [1:2] 1.869 0.599
+              $ 1.5: num(0)
+              $ 2.5: num [1:2] -1.26 1.51
+
+              *** Empty levels can be dropped
+              str(split(x, list(f1, f2), drop = TRUE))
+              List of 6
+              $ 1.1: num [1:2] 0.0332 1.3497
+              $ 1.2: num [1:2] -0.186 0.684
+              $ 1.3: num 0.927
+              $ 2.3: num -0.000885
+              $ 2.4: num [1:2] 1.869 0.599
+              $ 2.5: num [1:2] -1.26 1.51
+
+
+
+* Debugging Tools
+  ** traceback(): prints out the function call stack after an error occurs;
+                  does nothing if there's no error
+
+                  *** have to call traceback() immediately after the error occurs
+                  > mean(x)
+                  Error in mean(x) : object 'x' not found
+                  > traceback()
+                  1: mean(x)
+  ** debug(): flags a function for "debug" mode which allows you to step
+              through execution of a function one line at a time
+              > debug(lm)
+              > lm(y - x)
+              ......
+              > n # keep tapping n
+  ** browser: suspends the execution of a function wherever it is called and
+              puts the function in debug mode
+  ** trace: allows you to insert debugging code into a function a specific places
+  ** recover: options(error = recover): allows you to modify the error behavior
+              so that you can browse the function call stack
+              > options(error = recover)
+              read.csv("nosuchfile")
+              Error in ........
+
+* Looking at Data
+  ** Whenever you're working with a new dataset, the first thing you should do is
+     look at it! What is the format of the data? What are the dimensions? What
+     are the variable names? How are the variables stored? Are there missing
+     data? Are there any flaws in the data?
+
+  ** Steps:
+     1. checking the class: class()
+
+     2. Use dim() to see exactly how many rows and columns we're dealing with
+        - use nrow() to see only the number of rows.
+        - use ncol() to see only the number of columns
+
+     3. how much space the dataset is occupying in memory?
+        use object.size()
+
+     4. get a feel for what's inside: names() will return a character
+        vector of column (i.e. variable) names.
+
+     5. The head() function allows you to preview the top of the dataset
+        - By default, head() shows you the first six rows of the data. You can alter this
+          behavior by passing as a second argument the number of rows you'd like to view. Use
+          head() to preview the first 10 rows.
+
+     6. using tail() to preview the end of the dataset. Use tail() to view the last 15 rows.
+
+     7. After previewing the top and bottom of the data, you probably noticed lots of NAs,
+        which are R's placeholders for missing values. Use summary() to get a better
+        feel for how each variable is distributed and how much of the dataset is missing.
+
+     8. table()
+
+        For categorical variables (called 'factor' variables in R), summary() displays the
+        number of times each value (or 'level') occurs in the data. For example, each value of
+        Scientific_Name only appears once, since it is unique to a specific plant. In
+        contrast, the summary for Duration (also a factor variable) tells us that our dataset
+        contains 3031 Perennial plants, 682 Annual plants, etc.
+
+        You can see that R truncated the summary for Active_Growth_Period by including a
+        catch-all category called 'Other'. Since it is a categorical/factor variable, we can
+        see how many times each value actually occurs in the data with table().
+
+     9. str(): Compactly display the internal structure of an R object
+
+        - A diagnostic function and an alternative to "summary"
+        - It is especially well suited to compactly display the (abbreviated) contents
+          of (possibly nested) lists
+        - Roughly one line per basic object
+
+        *** the basic goal of str() is to answer the question "What's in this object?"
+
+        Perhaps the most useful and concise function for understanding the *str*ucture of your data is str().
+
+        The beauty of str() is that it combines many of the features of the other functions
+        you've already seen, all in a concise and readable format. At the very top, it tells
+        us that the class of plants is 'data.frame' and that it has 5166 observations and 10
+        variables. It then gives us the name and class of each variable, as well as a preview
+        of its contents.
+
+        str() is actually a very general function that you can use on most objects in R. Any
+        time you want to understand the structure of something (a dataset, function, etc.),
+        str() is a good place to start.
+
+
+
+
+
+* Simulation
+  Each probability distribution in R has an r*** function (for "random"), a d***
+  function (for "density"), a p*** (for "probability"), and q*** (for "quantile")
+
+  字首	  函數意義	         範例	                說明
+   d	  密度函數	        dnorm(1.96)	          P(X=x)
+   p	  累積機率函數(CDF)	 pnorm(1.96)=0.975	   P(X≤x)
+   q	  計算百分位數	     qnorm(0.975)=1.96	   q 系列為 p 系列的反函數; 所以 qnorm(pnorm(1.96)) = 1.96
+   r	  抽樣函數	        rnorm(100)	          傳回 100 個標準常態分布的樣本向量
+
+  ** Setting the random number seed with set.seed ensures reproducibility.
+     Always set the random number seed when conducting a simulation!
+
+  ** sample(): sample(1:6, 4, replace = TRUE) instructs R to randomly select four
+               numbers between 1 and 6, WITH replacement.
+
+               Sampling with replacement simply means that each number is "replaced"
+               after it is selected, so that the same number can show up more than once.
+
+               This is what we want here, since what you roll on one die shouldn't
+               affect what you roll on any of the others.
+
+               The sample() function can also be used to permute, or rearrange,
+               the elements of a vector. For example, try sample(LETTERS) to permute
+               all 26 letters of the English alphabet.
+               *** sample()的第二個argument沒有設的話表示排列(permutation)
+                   e.g.
+                   sample(1:10)
+                   [1] 4 7 10 6 9 2 8 3 1 5
+                   sample(1:10)
+                   [1] 2 3 4 1 9 5 10 8 6 7
+
+               This is identical to taking a sample of size 26 from LETTERS, without replacement.
+               When the 'size' argument to sample() is not specified, R takes a sample equal in size
+               to the vector from which you are sampling.
+
+               Now, suppose we want to simulate 100 flips of an unfair two-sided coin.
+               This particular coin has a 0.3 probability of landing 'tails' and
+               a 0.7 probability of landing 'heads'.
+
+               Let the value 0 represent tails and the value 1 represent heads.
+               Use sample() to draw a sample of size 100 from the vector c(0,1),
+               with replacement. Since the coin is unfair, we must attach specific
+               probabilities to the values 0 (tails) and 1 (heads) with a fourth argument,
+               prob = c(0.3, 0.7). Assign the result to a new variable called flips.
+
+               flips <- sample(c(0, 1), 100, replace = TRUE, prob = c(0.3, 0.7))
+
+  ** rbinom(): A binomial random variable represents the number of 'successes'
+               in a given number of independent 'trials'
+
+               Therefore, we can generate a single random variable that represents the
+               number of heads in 100 flips of our unfair coin using rbinom(1, size = 100, prob = 0.7).
+               Note that you only specify the probability of 'success' (heads) and NOT the probability
+               of 'failure' (tails).
+               n表示生成的隨機數數量，size表示實驗的次數，prob表示一次實驗成功的機率。
+
+               > rbinom(1, size = 100, prob = 0.7)
+               [1] 70
+
+
+               Equivalently, if we want to see all of the 0s and 1s, we can request 100 observations,
+               each of size 1, with success probability of 0.7.
+
+               Call rbinom() with n = 100, size = 1, and prob = 0.7 and assign the result to flips2.
+               > flips2 <- rbinom(100, 1, 0.7)
+
+  ** rnorm(): generate random normal variates with a given and standard deviation
+
+              The standard normal distribution has mean 0 and standard deviation 1.
+              The default values for the 'mean' and 'sd' arguments to rnorm() are 0 and 1,
+              respectively. Thus, rnorm(10) will generate 10 random numbers from a standard \
+              normal distribution.
+
+  ** dnorm(): evaluate the normal probability density (with a given mean/SD) at a point
+              (or vector of points)
+  ** pnorm(): evaluate the cumulative distribution function for a normal distribution
+
+  ** rpois(): generate random Poisson variates with a given rate
+
+              Poisson 實驗
+              1. 在任意區間(interval)內成功的次數和在其他區間內成功的次數是彼此獨立的。
+              2. 對於所有相同大小的區間，在任一區間內成功的機率都相同。
+              3. 在某一區間內成功的機率和該區間的大小成正比。
+              4. 當區間變小，超過1次成功的機率會趨近於0。
+
+              舉例，1小時內抵達公車站的車次。
+              舉例，1天內在某個區段的高速公路發生事故的次數(同時包含時間區間及空間區間)。
+
+              大致上都有一些共同的特徵：在某時間區段內，平均會發生若干次「事件」，但是有時候很少，
+              有時又異常地多，因此事件發生的次數是一個隨機變數，它所對應的機率函數稱為 Poisson 分配。
+
+              Poisson 隨機變數: 在 Poisson 實驗中，在指定的區間內成功的次數。
+
+              what if we want to simulate 100 *groups* of random numbers,
+              each containing 5 values generated from a Poisson distribution with mean 10
+
+              Generate 5 random values from a Poisson distribution with mean 10.
+
+              > rpois(5, 10)
+              [1]  9 15 16 11 17
+
+              > ppois(2, 2) ##Cumulative distribution
+              [1] 0.6766764 ## Pr(x <= 2)
+              > ppois(4, 2)
+              [1] 0.947347  ## Pr(x <= 4)
+
+              Now use replicate(100, rpois(5, 10)) to perform this operation 100 times.
+              my_pois <- replicate(100, rpois(5, 10))
+
+              replicate() created a matrix, each column of which contains 5 random numbers generated
+              from a Poisson distribution with mean 10. Now we can find the mean of each column in
+              my_pois using the colMeans() function. Store the result in a variable called cm.
+
+              > cm <- colMeans(my_pois)
+
+
+* R Profiler
+  ** Using system.time()
+     - Takes an arbitrary R expression as input (can be wrapped in curly braces)
+       and return the amount of time taken to evaluate the expression
+     - Computes the time (in seconds) needed to execute an expression
+       . If there's an error, gives time until the error occurred
+     - Returns an object of class proc_time
+       . user time: time charged to the CPU(s) for this expression
+       . elapsed time: "wall clock" time
+     - Usually, the user time and elapsed time are relative close, for straight computing tasks
+     - Elapsed time may be greater than user time if the CPU spends a lot of time waiting around
+     - Elapsed time may be smaller than the user time if your machine has multiple cores/processors
+       (and is capable of using them)
+       . Multi-threaded BLAS libraries (vecLib/Accelerate, ATLAS, ACML, MKL)
+       . Parallel processing via Parallel package
+
+  ** The R Profiler
+     - The Rprof() function starts the profiler in R
+       . R must be compiled with profiler support (but this is usually the case)
+     - The summaryRprof() function summarizes the output from Rprof() (Otherwise, it is nor readable)
+     - DO NOT use system.time() and Rprof() together or you will be sad
+
+* Basic Graphs
+
+** hist(): plotting a histogram; When looking at a single variable,
+           histograms are a useful tool. hist() is the associated R function.
+           Like plot(), hist() is best used by just passing in a single vector.
+
+** plot(): highlights the different arguments that the function can take.
+           The two most important are x and y, the variables that will be plotted.
+
+           - label of the x-axis set to "Speed"
+             > plot(x = cars$speed, y = cars$dist, xlab = "Speed")
+
+           - label of the y-axis set to "Stopping Distance"
+             > plot(x = cars$speed, y = cars$dist, ylab = "Stopping Distance")
+
+           - Plot cars with a main title of "My Plot".
+             > plot(cars, main = "My Plot")
+
+           - Plot cars with a sub title of "My Plot Subtitle".
+             > plot(cars, sub = "My Plot Subtitle")
+
+           - Plot cars so that the plotted points are colored red.
+             (Use col = 2 to achieve this effect.)
+             > plot(cars, col = 2)
+
+           - Plot cars while limiting the x-axis to 10 through 15.
+             (Use xlim = c(10, 15) to achieve this effect.)
+             > plot(cars, xlim = c(10, 15))
+
+             You can also change the shape of the symbols in the plot.
+             The help page for points (?points) provides the details.
+
+           - Plot cars using triangles. (Use pch = 2 to achieve this effect.)
+             > plot(cars, pch = 2)
+
+ ** boxplot(): Instead of adding data columns directly as input arguments, as we did with plot(),
+               it is often handy to pass in the entire data frame. This is what the "data" argument in
+               boxplot() allows.
+
+               boxplot(), like many R functions, also takes a "formula" argument, generally an
+               expression with a tilde ("~") which indicates the relationship between the input
+               variables. This allows you to enter something like mpg ~ cyl to plot the relationship
+               between cyl (number of cylinders) on the x-axis and mpg (miles per gallon) on the y-axis.
+
+               Use boxplot() with formula = mpg ~ cyl and data = mtcars to create a box plot.
+               > boxplot(mpg ~ cyl, mtcars)
