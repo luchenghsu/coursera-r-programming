@@ -13,8 +13,6 @@ rankall <- function(outcome, num = "best") {
 	} 
 	
 	## For each state, find the hospital of the given rank
-	#rank_all <- data.frame("hospital" = character(), "state" = character(), stringsAsFactors = FALSE)
-	#rank_all <- data.frame()
 	sub_data <- subset(data, select = c(2, 7, outcome_col))
 	colnames(sub_data) <- c("hospital", "state", "rate")
 	sub_data[, 3] <- as.numeric(sub_data[, 3])	
