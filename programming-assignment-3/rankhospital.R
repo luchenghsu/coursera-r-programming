@@ -1,6 +1,6 @@
 rankhospital <- function(state, outcome, num = "best") {
 	## Read outcome data
-	data <- read.csv("outcome-of-care-measures.csv", colClasses = "character" )	    
+	data <- read.csv("outcome-of-care-measures.csv", na.strings = "Not Available", stringsAsFactors = FALSE)
 	states_factor <- factor(data$State)
 	states_levels <- levels(states_factor)
 	    

@@ -1,6 +1,6 @@
 rankall <- function(outcome, num = "best") {
 	## Read outcome data
-	data <- read.csv("outcome-of-care-measures.csv", colClasses = "character")	
+	data <- read.csv("outcome-of-care-measures.csv", na.strings = "Not Available", stringsAsFactors = FALSE)
 	states_factor <- factor(data$State)
 	states_levels <- levels(states_factor)
 
@@ -13,10 +13,8 @@ rankall <- function(outcome, num = "best") {
 	} 
 	
 	## For each state, find the hospital of the given rank
-	#rank_all <- data.frame("hospital" = character(), "state" = character(), stringsAsFactors = FALSE)
-	#rank_all <- data.frame()
 	sub_data <- subset(data, select = c(2, 7, outcome_col))
-	colnames(sub_data) <- c("hospital", "state", "rate")
+	colnames(sub_data) <- c("hospital", "state", "outcome")
 	sub_data[, 3] <- as.numeric(sub_data[, 3])	
 	
 	sub_data <- split(sub_data, sub_data$state)
