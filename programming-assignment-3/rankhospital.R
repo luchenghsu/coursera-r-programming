@@ -19,16 +19,15 @@ rankhospital <- function(state, outcome, num = "best") {
 	
 	## Return hospital name in that state with the given rank 30-day death rate
 	sub_data <- subset(data, State == state, select = c(2, outcome_col))
-	sub_data[, 2] <- as.numeric(sub_data[, 2])	
-	ranks <- sub_data[order(sub_data[, 2], sub_data[, 1], na.last = NA), ]
-    worst <- nrow(ranks)
+	colnames(sub_data) <- c("hospital", "outcome")
+	sub_data <- sub_data[order(sub_data$outcome, sub_data$hospital, na.last = NA), ]
     
     if(num == "best") {
-    	return(ranks[1,1])
+    	return(sub_data[1, "hospital"])
     } else if(num == "worst") {
-    	return(ranks[worst, 1]) 
+    	return(sub_data[nrow(sub_data), "hospital"]) 
     }
     
-    return(ranks[num, 1])
+    return(sub_data[num, "hospital"])
     	
 }
